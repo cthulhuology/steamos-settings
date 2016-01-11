@@ -1,0 +1,77 @@
+#!/bin/bash
+# file: /etc/pm/power.d/power
+# power management scripts
+
+if on_ac_power; then
+
+	# disable laptop mode
+	echo 0 > /proc/sys/vm/laptop_mode
+
+	#NMI watchdog should be turned on
+	for x in /proc/sys/kernel/nmi_watchdog;
+		do echo 1 > $x;
+	done
+
+	# Set SATA channel: max performance
+	for x in /sys/class/scsi_host/host*/link_power_management_policy;
+		do echo max_performance > $x;
+	done
+
+	# CPU Governor: Performance
+	for x in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor;
+		do echo performance > $x;
+	done 
+
+	# Disable USB autosuspend
+	for x in /sys/bus/usb/devices/*/power/control;
+		do echo on > $x;
+	done
+
+	# Disable PCI autosuspend
+	for x in /sys/bus/pci/devices/*/power/control;
+		do echo on > $x;
+	done
+
+	# Disabile audio_card power saving
+	echo 0 > /sys/module/snd_hda_intel/parameters/power_save_controller
+	echo 0 > /sys/module/snd_hda_intel/parameters/power_save
+
+else  # we're on battery power
+
+	# Enable Laptop-Mode disk writing
+	echo 5 > /proc/sys/vm/laptop_mode
+
+	#NMI watchdog should be turned on
+	for x in /proc/sys/kernel/nmi_watchdog;
+		do echo 0 > $x;
+	done
+
+	# Set SATA channel to power saving
+	for x in /sys/class/scsi_host/host*/link_power_management_policy;
+		do echo min_power > $x;
+	done
+
+	# Select Ondemand CPU Governor
+	for x in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor;
+		do echo powersave > $x;
+	done
+
+	# Activate USB autosuspend
+	for x in /sys/bus/usb/devices/*/power/level;
+		do echo auto > $x;
+	done
+
+	# Activate PCI autosuspend
+	for x in /sys/bus/pci/devices/*/power/control;
+		do echo auto > $x;
+	done
+
+	# Activate audio card power saving
+	# (sounds shorter than 5 seconds will not be played)
+	echo 5 > /sys/module/snd_hda_intel/parameters/power_save
+	echo 1 > /sys/module/snd_hda_intel/parameters/power_save_controller
+
+	# End battery powered settings -----------------------------------------#
+
+fi	
+
