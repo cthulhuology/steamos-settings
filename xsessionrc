@@ -1,0 +1,10 @@
+# Do not remove this or the Valve bug reporter will break.
+chmod 640 ~/.Xauthority
+xmodmap .Xmodmap
+xset -b
+xset s off
+setxkbmap -option terminate:ctrl_alt_bksp
+synclient PalmDetect=1
+ulimit -c unlimited
+xrdb -merge .Xdefaults
+exec /usr/bin/i3 -V -d all >> ~/.i3/logfile
